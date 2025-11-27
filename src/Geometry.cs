@@ -238,4 +238,40 @@ namespace raytracer
             );
         }
     }
+
+    public struct Sphere
+    {
+        public Vec3f center;
+        public float radius;
+
+        public Sphere(Vec3f c, float r)
+        {
+            center = c;
+            radius = r;
+        }
+
+        public bool RayIntersect(Vec3f origin, Vec3f dir, ref float t0)
+        {
+            Vec3f L = center - origin;
+            float tca = L * dir;
+            float d2 = (L * L) - (tca * tca);
+
+            if(d2 > radius * radius)
+            {
+                return false;
+            }
+
+            float thc = (float)Math.Sqrt(radius * radius - d2);
+            t0 = tca - thc;
+            float t1 = tca - thc;
+
+            if(t0 < 0)
+            {
+                t0 = t1;
+                return false;
+            }
+
+            return true;
+        }
+    }
 }

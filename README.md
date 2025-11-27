@@ -8,8 +8,12 @@ This project is a learning exercise to understand raytracing fundamentals by con
 
 ## Current Progress
 
-- Step 1: PPM image file writing
-- Vector math (Vec3f) with operator overloading
+- PPM image saved.
+- Ray sphere intersection vec3f.
+- JPEG image saved.
+- custom 3D math vector (Vec2f, Vec3f, Vec3i, Vec4f).
+- operator overloading of vector operations (dot product, scalar multiplication).
+- single sphere rendered.
 
 ## How to Run
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Numerics;
 using System.Drawing;
 using System.Drawing.Imaging;
 
@@ -16,20 +15,33 @@ namespace raytracer
             return value;
         }
 
-        static void Render()
+        static Vec3f CastRay(Vec3f origin, Vec3f dir, Sphere sphere)
+        {
+            float sphere_dist = float.MaxValue;
+            if (!sphere.RayIntersect(origin, dir, ref sphere_dist))
+            {
+                return new Vec3f(0.2f, 0.7f, 0.9f);
+            }
+            return new Vec3f(0.4f, 0.4f, 0.3f);
+        }
+
+        static void Render(Sphere sphere)
         {
             const int width = 1024;
             const int height = 768;
-            Vector3[] framebuffer = new Vector3[width * height];
+            const float fov = (float)(Math.PI / 2.0);
+            Vec3f[] framebuffer = new Vec3f[width * height];
 
             for (int j = 0; j < height; j++)
             {
                 for (int i = 0; i < width; i++)
                 {
-                    framebuffer[i + j * width] = new Vector3(
-                        j / (float)height,
-                        i / (float)width,
-                        0);
+                    float x = (2 * (i + 0.5f) / (float)width - 1) * (float)Math.Tan(fov / 2.0) * width / (float)height;
+                    float y = -(2 * (j + 0.5f) / (float)height - 1) * (float)Math.Tan(fov / 2.0);
+                    Vec3f dir = new Vec3f(x, y, -1);
+                    dir = dir.Normalize();
+
+                    framebuffer[i + j * width] = CastRay(new Vec3f(0, 0, 0), dir, sphere);
                 }
             }
 
@@ -39,10 +51,10 @@ namespace raytracer
                 {
                     for (int i = 0; i < width; i++)
                     {
-                        Vector3 color = framebuffer[i + j * width];
-                        int r = (int)(255 * Clamp(color.X, 0f, 1f));
-                        int g = (int)(255 * Clamp(color.Y, 0f, 1f));
-                        int b = (int)(255 * Clamp(color.Z, 0f, 1f));
+                        Vec3f color = framebuffer[i + j * width];
+                        int r = (int)(255 * Clamp(color.x, 0f, 1f));
+                        int g = (int)(255 * Clamp(color.y, 0f, 1f));
+                        int b = (int)(255 * Clamp(color.z, 0f, 1f));
                         bitmap.SetPixel(i, j, Color.FromArgb(r, g, b));
                     }
                 }
@@ -54,7 +66,8 @@ namespace raytracer
         }
         static void Main()
         {
-            Render();
+            Sphere sphere = new Sphere(new Vec3f(3, 0, -16), 4);
+            Render(sphere);
         }
     } 
 }
