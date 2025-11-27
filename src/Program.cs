@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Numerics;
+using System.Drawing;
+using System.Drawing.Imaging;
 
 
 namespace raytracer
@@ -31,24 +33,25 @@ namespace raytracer
                 }
             }
 
-            using (FileStream fs = new FileStream("../../../output/out.ppm", FileMode.Create))
-            using (BinaryWriter writer = new BinaryWriter(fs))
+            using (Bitmap bitmap = new Bitmap(width, height))
             {
-                string header = $"P6\n{width} {height}\n255\n";
-                byte[] headerBytes = System.Text.Encoding.ASCII.GetBytes(header);
-                writer.Write(headerBytes);
-
-                for (int i = 0; i < height * width; i++)
+                for (int j = 0; j < height; j++)
                 {
-                    Vector3 color = framebuffer[i];
-                    writer.Write((byte)(255 * Clamp(color.X, 0f, 1f)));
-                    writer.Write((byte)(255 * Clamp(color.Y, 0f, 1f)));
-                    writer.Write((byte)(255 * Clamp(color.Z, 0f, 1f)));
+                    for (int i = 0; i < width; i++)
+                    {
+                        Vector3 color = framebuffer[i + j * width];
+                        int r = (int)(255 * Clamp(color.X, 0f, 1f));
+                        int g = (int)(255 * Clamp(color.Y, 0f, 1f));
+                        int b = (int)(255 * Clamp(color.Z, 0f, 1f));
+                        bitmap.SetPixel(i, j, Color.FromArgb(r, g, b));
+                    }
                 }
-            }
-            Console.WriteLine("Image saved!");
-        }
 
+                bitmap.Save("../../../output/out.jpg", ImageFormat.Jpeg);
+            }
+
+            Console.WriteLine(("Image Saved!"));
+        }
         static void Main()
         {
             Render();
