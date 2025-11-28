@@ -2,6 +2,7 @@
 using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Collections.Generic;
 
 
 namespace raytracer
@@ -15,17 +16,38 @@ namespace raytracer
             return value;
         }
 
-        static Vec3f CastRay(Vec3f origin, Vec3f dir, Sphere sphere)
+        static bool SceneIntersect(Vec3f origin, Vec3f dir, List<Sphere> spheres, ref Vec3f hit, ref Vec3f N, ref Material material)
         {
-            float sphere_dist = float.MaxValue;
-            if (!sphere.RayIntersect(origin, dir, ref sphere_dist))
+            float spheres_dist = float.MaxValue;
+
+            foreach (Sphere sphere in spheres)
             {
-                return new Vec3f(0.2f, 0.7f, 0.9f);
+                float dist_i = 0;
+                if(sphere.RayIntersect(origin, dir, ref dist_i) && dist_i < spheres_dist)
+                {
+                    spheres_dist = dist_i;
+                    hit = origin + dir * dist_i;
+                    N = (hit - sphere.center).Normalize();
+                    material = sphere.material;
+                }
             }
-            return new Vec3f(0.4f, 0.4f, 0.3f);
+            return spheres_dist < 1000;
         }
 
-        static void Render(Sphere sphere)
+        static Vec3f CastRay(Vec3f origin, Vec3f dir, List<Sphere> spheres)
+        {
+            Vec3f point = new Vec3f();
+            Vec3f N = new Vec3f();
+            Material material = new Material();
+
+            if(!SceneIntersect(origin, dir, spheres, ref point, ref N, ref material))
+            {
+                return new Vec3f(0.2f, 0.7f, 0.8f);
+            }
+            return material.diffuse_color;
+        }
+
+        static void Render(List<Sphere> spheres)
         {
             const int width = 1024;
             const int height = 768;
@@ -41,7 +63,7 @@ namespace raytracer
                     Vec3f dir = new Vec3f(x, y, -1);
                     dir = dir.Normalize();
 
-                    framebuffer[i + j * width] = CastRay(new Vec3f(0, 0, 0), dir, sphere);
+                    framebuffer[i + j * width] = CastRay(new Vec3f(0, 0, 0), dir, spheres);
                 }
             }
 
@@ -66,8 +88,22 @@ namespace raytracer
         }
         static void Main()
         {
-            Sphere sphere = new Sphere(new Vec3f(3, 0, -16), 4);
-            Render(sphere);
+            Material ivory = new Material(new Vec3f(0.4f, 0.4f, 0.3f));
+            Material red_rubber = new Material(new Vec3f(0.3f, 0.1f, 0.1f));
+            Material mirror = new Material(new Vec3f(1.0f, 1.0f, 1.0f));
+            Material charcoal = new Material(new Vec3f(0.2f, 0.2f, 0.2f));
+            Material amethyst = new Material(new Vec3f(0.5f, 0.0f, 1.0f));
+
+            List<Sphere> spheres = new List<Sphere>
+            {
+                new Sphere(new Vec3f(-4.8f, -1.8f, -16), 5.5f, mirror),
+                new Sphere(new Vec3f(8, 8, -16), 2.9f, red_rubber),
+                new Sphere(new Vec3f(-4, 6, -23), 2.8f, ivory),
+                new Sphere(new Vec3f(3, 3, -20), 4.8f, charcoal),
+                new Sphere(new Vec3f(4, -4, -24), 3.8f, amethyst),
+            };
+
+            Render(spheres);
         }
     } 
 }
