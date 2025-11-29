@@ -34,7 +34,7 @@ namespace raytracer
             return spheres_dist < 1000;
         }
 
-        static Vec3f CastRay(Vec3f origin, Vec3f dir, List<Sphere> spheres)
+        static Vec3f CastRay(Vec3f origin, Vec3f dir, List<Sphere> spheres, List<Light> lights)
         {
             Vec3f point = new Vec3f();
             Vec3f N = new Vec3f();
@@ -44,10 +44,17 @@ namespace raytracer
             {
                 return new Vec3f(0.2f, 0.7f, 0.8f);
             }
-            return material.diffuse_color;
+
+            float diffuse_light_intensity = 0;
+            for (int i = 0; i < lights.Count; i++)
+            {
+                Vec3f light_dir = (lights[i].position - point).Normalize();
+                diffuse_light_intensity += lights[i].intensity * Math.Max(0f, light_dir * N);
+            }
+            return material.diffuse_color * diffuse_light_intensity;
         }
 
-        static void Render(List<Sphere> spheres)
+        static void Render(List<Sphere> spheres, List<Light> lights)
         {
             const int width = 1024;
             const int height = 768;
@@ -63,7 +70,7 @@ namespace raytracer
                     Vec3f dir = new Vec3f(x, y, -1);
                     dir = dir.Normalize();
 
-                    framebuffer[i + j * width] = CastRay(new Vec3f(0, 0, 0), dir, spheres);
+                    framebuffer[i + j * width] = CastRay(new Vec3f(0, 0, 0), dir, spheres, lights);
                 }
             }
 
@@ -103,7 +110,12 @@ namespace raytracer
                 new Sphere(new Vec3f(4, -4, -24), 3.8f, amethyst),
             };
 
-            Render(spheres);
+            List<Light> lights = new List<Light>
+            {
+                new Light(new Vec3f(-20, 20, 20), 1.5f)
+            };
+
+            Render(spheres, lights);
         }
     } 
 }

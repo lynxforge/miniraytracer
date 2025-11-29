@@ -249,6 +249,18 @@ namespace raytracer
         }
     }
 
+    public struct Light
+    {
+        public Vec3f position;
+        public float intensity;
+
+        public Light(Vec3f p, float i)
+        {
+            position = p;
+            intensity = i;
+        }
+    }
+
     public struct Sphere
     {
         public Vec3f center;

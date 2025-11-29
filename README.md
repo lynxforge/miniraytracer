@@ -14,6 +14,8 @@ This project is a learning exercise to understand raytracing fundamentals by con
 - custom 3D math vector (Vec2f, Vec3f, Vec3i, Vec4f).
 - operator overloading of vector operations (dot product, scalar multiplication).
 - single sphere rendered.
+- more sphere added with different materials
+- lighting and shadow to the spheres
 
 ## How to Run
 
