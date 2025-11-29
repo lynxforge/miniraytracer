@@ -16,6 +16,11 @@ namespace raytracer
             return value;
         }
 
+        static Vec3f Reflect(Vec3f I, Vec3f N)
+        {
+            return I - N * 2f * (I * N);
+        }
+
         static bool SceneIntersect(Vec3f origin, Vec3f dir, List<Sphere> spheres, ref Vec3f hit, ref Vec3f N, ref Material material)
         {
             float spheres_dist = float.MaxValue;
@@ -46,12 +51,24 @@ namespace raytracer
             }
 
             float diffuse_light_intensity = 0;
+            float specular_light_intensity = 0;
+
             for (int i = 0; i < lights.Count; i++)
             {
+                //Diffuse Component
                 Vec3f light_dir = (lights[i].position - point).Normalize();
                 diffuse_light_intensity += lights[i].intensity * Math.Max(0f, light_dir * N);
+
+                //Specular Component
+                Vec3f light_ref = Reflect(-light_dir, N);
+                float spec_factor = (float)Math.Pow(Math.Max(0f, -light_ref * dir), material.specular_exponent);
+                specular_light_intensity += spec_factor * lights[i].intensity;
             }
-            return material.diffuse_color * diffuse_light_intensity;
+
+            Vec3f diffuse_part = material.diffuse_color * diffuse_light_intensity * material.albedo.x;
+            Vec3f specular_part = new Vec3f(1f, 1f, 1f) * specular_light_intensity * material.albedo.y;
+            
+            return diffuse_part + specular_part;
         }
 
         static void Render(List<Sphere> spheres, List<Light> lights)
@@ -81,6 +98,13 @@ namespace raytracer
                     for (int i = 0; i < width; i++)
                     {
                         Vec3f color = framebuffer[i + j * width];
+
+                        float max = Math.Max(color.x, Math.Max(color.y, color.z));
+                        if(max > 1)
+                        {
+                            color = color * (1f / max);
+                        }
+                       
                         int r = (int)(255 * Clamp(color.x, 0f, 1f));
                         int g = (int)(255 * Clamp(color.y, 0f, 1f));
                         int b = (int)(255 * Clamp(color.z, 0f, 1f));
@@ -93,13 +117,14 @@ namespace raytracer
 
             Console.WriteLine(("Image Saved!"));
         }
+
         static void Main()
         {
-            Material ivory = new Material(new Vec3f(0.4f, 0.4f, 0.3f));
-            Material red_rubber = new Material(new Vec3f(0.3f, 0.1f, 0.1f));
-            Material mirror = new Material(new Vec3f(1.0f, 1.0f, 1.0f));
-            Material charcoal = new Material(new Vec3f(0.2f, 0.2f, 0.2f));
-            Material amethyst = new Material(new Vec3f(0.5f, 0.0f, 1.0f));
+            Material ivory = new Material(new Vec2f(0.6f, 0.3f), new Vec3f(0.4f, 0.4f, 0.3f), 50f);
+            Material red_rubber = new Material(new Vec2f(0.9f, 0.1f), new Vec3f(0.3f, 0.1f, 0.1f), 10f);
+            Material mirror = new Material(new Vec2f(0.2f, 0.8f), new Vec3f(1.0f, 1.0f, 1.0f), 1425f);
+            Material charcoal = new Material(new Vec2f(0.95f, 0.05f), new Vec3f(0.15f, 0.15f, 0.15f), 10f);
+            Material amethyst = new Material(new Vec2f(0.6f, 0.4f), new Vec3f(0.6f, 0.5f, 0.95f), 200f);
 
             List<Sphere> spheres = new List<Sphere>
             {
@@ -112,7 +137,9 @@ namespace raytracer
 
             List<Light> lights = new List<Light>
             {
-                new Light(new Vec3f(-20, 20, 20), 1.5f)
+                new Light(new Vec3f(-20, 20, 20), 1.5f),
+                new Light(new Vec3f(30, 50, -25), 1.8f),
+                new Light(new Vec3f(30, 20, 30), 1.7f),
             };
 
             Render(spheres, lights);

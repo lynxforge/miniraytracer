@@ -16,6 +16,7 @@ This project is a learning exercise to understand raytracing fundamentals by con
 - single sphere rendered.
 - more sphere added with different materials
 - lighting and shadow to the spheres
+- added specular light reflections  
 
 ## How to Run
 
