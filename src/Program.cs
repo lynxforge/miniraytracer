@@ -45,7 +45,7 @@ namespace raytracer
             Vec3f N = new Vec3f();
             Material material = new Material();
 
-            if(depth > 4 || !SceneIntersect(origin, dir, spheres, ref point, ref N, ref material))
+            if(depth > 5 || !SceneIntersect(origin, dir, spheres, ref point, ref N, ref material))
             {
                 return new Vec3f(0.2f, 0.7f, 0.8f);
             }
@@ -147,7 +147,7 @@ namespace raytracer
         static void Main()
         {
             Material ivory = new Material(new Vec3f(0.6f, 0.3f, 0.1f), new Vec3f(0.4f, 0.4f, 0.3f), 50f);
-            Material red_rubber = new Material(new Vec3f(0.9f, 0.1f, 0.0f), new Vec3f(0.3f, 0.1f, 0.1f), 10f);
+            Material red_rubber = new Material(new Vec3f(0.0f, 10.1f, 0.8f), new Vec3f(1.0f, 1.0f, 1.0f), 1425f);
             Material mirror = new Material(new Vec3f(0.0f, 10.0f, 0.8f), new Vec3f(1.0f, 1.0f, 1.0f), 1425f);
             Material charcoal = new Material(new Vec3f(0.95f, 0.05f, 0.0f), new Vec3f(0.15f, 0.15f, 0.15f), 10f);
             Material amethyst = new Material(new Vec3f(0.6f, 0.4f, 0.2f), new Vec3f(0.6f, 0.5f, 0.95f), 200f);
@@ -157,7 +157,7 @@ namespace raytracer
                 new Sphere(new Vec3f(-5.8f, -2.8f, -16), 5.5f, mirror),
                 new Sphere(new Vec3f(8, 8, -16), 2.9f, red_rubber),
                 new Sphere(new Vec3f(-4, 6, -23), 2.8f, ivory),
-                new Sphere(new Vec3f(3, 3, -20), 4.8f, charcoal),
+                new Sphere(new Vec3f(3, 3, -22), 4.8f, charcoal),
                 new Sphere(new Vec3f(4, -4, -23), 3.8f, amethyst),
             };
 

@@ -18,6 +18,8 @@ This project is a learning exercise to understand raytracing fundamentals by con
 - lighting and shadow to the spheres
 - added specular light reflections 
 - added shadows on the spheres
+- reflections and changed sphere position
+- made red_rubber into mirror to check recursion depth which i have set to max 5 here._
 
 ## How to Run
 
