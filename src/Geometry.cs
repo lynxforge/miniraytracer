@@ -241,11 +241,11 @@ namespace raytracer
 
     public struct Material
     {
-        public Vec2f albedo; //(diffuse, specular) weights
+        public Vec3f albedo; //(diffuse, specular, reflective)
         public Vec3f diffuse_color;
         public float specular_exponent; //Shininess factor
 
-        public Material(Vec2f a, Vec3f color, float spec)
+        public Material(Vec3f a, Vec3f color, float spec)
         {
             albedo = a;
             diffuse_color = color;
@@ -253,7 +253,7 @@ namespace raytracer
         }
 
         //Default constructor for initialization
-        public Material(Vec3f color) : this(new Vec2f(1, 0), color, 0) { }
+        public Material(Vec3f color) : this(new Vec3f(1, 0, 0), color, 0) { }
     }
 
     public struct Light

@@ -39,16 +39,22 @@ namespace raytracer
             return spheres_dist < 1000;
         }
 
-        static Vec3f CastRay(Vec3f origin, Vec3f dir, List<Sphere> spheres, List<Light> lights)
+        static Vec3f CastRay(Vec3f origin, Vec3f dir, List<Sphere> spheres, List<Light> lights, int depth = 0)
         {
             Vec3f point = new Vec3f();
             Vec3f N = new Vec3f();
             Material material = new Material();
 
-            if(!SceneIntersect(origin, dir, spheres, ref point, ref N, ref material))
+            if(depth > 4 || !SceneIntersect(origin, dir, spheres, ref point, ref N, ref material))
             {
                 return new Vec3f(0.2f, 0.7f, 0.8f);
             }
+
+            Vec3f reflect_dir = Reflect(dir, N).Normalize();
+            Vec3f reflect_orig = (reflect_dir * N < 0)
+                ? point - N * 1e-3f
+                : point + N * 1e-3f;
+            Vec3f reflect_color = CastRay(reflect_orig, reflect_dir, spheres, lights, depth + 1);
 
             float diffuse_light_intensity = 0;
             float specular_light_intensity = 0;
@@ -57,8 +63,8 @@ namespace raytracer
             {
                 //Diffuse Component
                 Vec3f light_dir = (lights[i].position - point).Normalize();
-
                 float light_dist = (lights[i].position - point).Norm();
+
                 Vec3f shadow_origin = (light_dir * N < 0) 
                     ? point - N * 1e-3f 
                     : point + N * 1e-3f;
@@ -83,10 +89,12 @@ namespace raytracer
                 specular_light_intensity += spec_factor * lights[i].intensity;
             }
 
+            diffuse_light_intensity += 0.05f;  //ambient light by 5% for amethyst
             Vec3f diffuse_part = material.diffuse_color * diffuse_light_intensity * material.albedo.x;
             Vec3f specular_part = new Vec3f(1f, 1f, 1f) * specular_light_intensity * material.albedo.y;
+            Vec3f reflect_part = reflect_color * material.albedo.z;
             
-            return diffuse_part + specular_part;
+            return diffuse_part + specular_part + reflect_part;
         }
 
         static void Render(List<Sphere> spheres, List<Light> lights)
@@ -120,7 +128,7 @@ namespace raytracer
                         float max = Math.Max(color.x, Math.Max(color.y, color.z));
                         if(max > 1)
                         {
-                            color = color * (1f / max);
+                            color *= (1f / max);
                         }
                        
                         int r = (int)(255 * Clamp(color.x, 0f, 1f));
@@ -138,19 +146,19 @@ namespace raytracer
 
         static void Main()
         {
-            Material ivory = new Material(new Vec2f(0.6f, 0.3f), new Vec3f(0.4f, 0.4f, 0.3f), 50f);
-            Material red_rubber = new Material(new Vec2f(0.9f, 0.1f), new Vec3f(0.3f, 0.1f, 0.1f), 10f);
-            Material mirror = new Material(new Vec2f(0.2f, 0.8f), new Vec3f(1.0f, 1.0f, 1.0f), 1425f);
-            Material charcoal = new Material(new Vec2f(0.95f, 0.05f), new Vec3f(0.15f, 0.15f, 0.15f), 10f);
-            Material amethyst = new Material(new Vec2f(0.6f, 0.4f), new Vec3f(0.6f, 0.5f, 0.95f), 200f);
+            Material ivory = new Material(new Vec3f(0.6f, 0.3f, 0.1f), new Vec3f(0.4f, 0.4f, 0.3f), 50f);
+            Material red_rubber = new Material(new Vec3f(0.9f, 0.1f, 0.0f), new Vec3f(0.3f, 0.1f, 0.1f), 10f);
+            Material mirror = new Material(new Vec3f(0.0f, 10.0f, 0.8f), new Vec3f(1.0f, 1.0f, 1.0f), 1425f);
+            Material charcoal = new Material(new Vec3f(0.95f, 0.05f, 0.0f), new Vec3f(0.15f, 0.15f, 0.15f), 10f);
+            Material amethyst = new Material(new Vec3f(0.6f, 0.4f, 0.2f), new Vec3f(0.6f, 0.5f, 0.95f), 200f);
 
             List<Sphere> spheres = new List<Sphere>
             {
-                new Sphere(new Vec3f(-4.8f, -1.8f, -16), 5.5f, mirror),
+                new Sphere(new Vec3f(-5.8f, -2.8f, -16), 5.5f, mirror),
                 new Sphere(new Vec3f(8, 8, -16), 2.9f, red_rubber),
                 new Sphere(new Vec3f(-4, 6, -23), 2.8f, ivory),
                 new Sphere(new Vec3f(3, 3, -20), 4.8f, charcoal),
-                new Sphere(new Vec3f(4, -4, -24), 3.8f, amethyst),
+                new Sphere(new Vec3f(4, -4, -23), 3.8f, amethyst),
             };
 
             List<Light> lights = new List<Light>
