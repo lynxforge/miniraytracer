@@ -57,6 +57,24 @@ namespace raytracer
             {
                 //Diffuse Component
                 Vec3f light_dir = (lights[i].position - point).Normalize();
+
+                float light_dist = (lights[i].position - point).Norm();
+                Vec3f shadow_origin = (light_dir * N < 0) 
+                    ? point - N * 1e-3f 
+                    : point + N * 1e-3f;
+
+                Vec3f shadow_hit = new Vec3f();
+                Vec3f shadow_N = new Vec3f();
+                Material tempMaterial = new Material();
+
+                if(SceneIntersect(shadow_origin, light_dir, spheres, ref shadow_hit, ref shadow_N, ref tempMaterial))
+                {
+                    float dist_to_blocker = (shadow_hit - shadow_origin).Norm();
+                    if(dist_to_blocker < light_dist)
+                    {
+                        continue;
+                    }
+                }
                 diffuse_light_intensity += lights[i].intensity * Math.Max(0f, light_dir * N);
 
                 //Specular Component
